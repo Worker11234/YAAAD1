@@ -1,14 +1,27 @@
 import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
+import { logger } from '../utils/logger';
 
-// Standard rate limiter for API endpoints
-export const apiLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes by default
+// Default rate limit window and max requests
+const WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes
+const MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10); // 100 requests per window
+
+// Create a rate limiter with dynamic limits based on user subscription
+export const rateLimiter = rateLimit({
+  windowMs: WINDOW_MS,
   max: (req: Request) => {
-    // Premium users get higher limits
-    return req.user?.subscription_tier === 'premium' 
-      ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10) * 2 
-      : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10);
+    // Get user subscription tier from request (set by auth middleware)
+    const userTier = (req as any).user?.subscriptionTier || 'free';
+    
+    // Adjust limits based on subscription tier
+    switch (userTier) {
+      case 'premium':
+        return MAX_REQUESTS * 5; // 5x the requests for premium users
+      case 'pro':
+        return MAX_REQUESTS * 2; // 2x the requests for pro users
+      default:
+        return MAX_REQUESTS; // Default limit for free users
+    }
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -17,49 +30,36 @@ export const apiLimiter = rateLimit({
     success: false,
     error: {
       message: 'Too many requests, please try again later.',
-      upgrade_available: true
+      code: 'RATE_LIMIT_EXCEEDED'
     }
   },
-  keyGenerator: (req: Request) => {
-    return req.user?.id || req.ip;
+  handler: (req: Request, res: Response) => {
+    logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      success: false,
+      error: {
+        message: 'Too many requests, please try again later.',
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: Math.ceil(WINDOW_MS / 1000 / 60) // minutes
+      }
+    });
   }
 });
 
-// Stricter rate limiter for upload endpoints
-export const uploadLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: (req: Request) => {
-    // Premium users get higher upload limits
-    return req.user?.subscription_tier === 'premium' 
-      ? parseInt(process.env.UPLOAD_RATE_LIMIT || '10', 10) * 3 
-      : parseInt(process.env.UPLOAD_RATE_LIMIT || '10', 10);
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
+// Specific rate limiter for uploads
+export const uploadRateLimiter = rateLimit({
+  windowMs: WINDOW_MS,
+  max: parseInt(process.env.UPLOAD_RATE_LIMIT || '10', 10), // 10 uploads per window
   message: {
     status: 429,
     success: false,
     error: {
-      message: 'Upload limit reached. Please try again later or upgrade your plan.',
-      upgrade_available: true
+      message: 'Too many uploads, please try again later.',
+      code: 'UPLOAD_LIMIT_EXCEEDED'
     }
-  },
-  keyGenerator: (req: Request) => {
-    return req.user?.id || req.ip;
   }
 });
 
-// Rate limiter for authentication endpoints to prevent brute force attacks
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    status: 429,
-    success: false,
-    error: {
-      message: 'Too many login attempts, please try again later.'
-    }
-  }
-});
+export { rateLimiter }
+
+export { uploadRateLimiter }
