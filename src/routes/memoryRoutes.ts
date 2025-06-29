@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { upload, validateImageUpload, validateSearch } from '../middleware/validator';
-import { apiLimiter, uploadLimiter } from '../middleware/rateLimiter';
+import { rateLimiter, uploadRateLimiter } from '../middleware/rateLimiter';
 import {
   analyzeMemories,
   getMemories,
@@ -12,12 +12,12 @@ import {
 const router = Router();
 
 // Apply rate limiters
-router.use(apiLimiter);
+router.use(rateLimiter);
 
 // Routes
 router.post(
   '/analyze',
-  uploadLimiter,
+  uploadRateLimiter,
   upload.array('images', 10),
   validateImageUpload,
   analyzeMemories
