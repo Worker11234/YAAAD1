@@ -23,6 +23,23 @@ interface InsertedMemory {
   processing_status: string;
 }
 
+interface NewMemory {
+  user_id: string;
+  image_url: string;
+  thumbnail_url: string;
+  original_filename: string;
+  file_size: number;
+  image_dimensions: {
+    width: number;
+    height: number;
+    format: string;
+  };
+  taken_at: string;
+  location_data: any;
+  privacy_level: string;
+  processing_status: string;
+}
+
 export class MemoriesController {
   // Get all memories for the authenticated user
   async getMemories(req: Request, res: Response, next: NextFunction) {
@@ -269,7 +286,7 @@ export class MemoriesController {
           );
 
           // Create memory record
-          const memory: InsertedMemory = await db.insert('memories', {
+          const newMemoryData: NewMemory = {
             user_id: userId,
             image_url: imageUrl,
             thumbnail_url: thumbnailUrl,
@@ -284,7 +301,9 @@ export class MemoriesController {
             location_data: location,
             privacy_level: privacyLevel,
             processing_status: 'pending'
-          });
+          };
+
+          const memory: InsertedMemory = await db.insert('memories', newMemoryData);
 
           // Add to collection if specified
           if (collectionId) {
@@ -366,7 +385,7 @@ export class MemoriesController {
       }
 
       // Check if memory exists and belongs to user
-      const memory = await db.getById('memories', memoryId);
+      const memory: InsertedMemory | null = await db.getById('memories', memoryId);
       if (!memory) {
         throw new AppError('Memory not found', 404);
       }
@@ -398,7 +417,7 @@ export class MemoriesController {
       }
 
       // Check if memory exists and belongs to user
-      const memory = await db.getById('memories', memoryId);
+      const memory: InsertedMemory | null = await db.getById('memories', memoryId);
       if (!memory) {
         throw new AppError('Memory not found', 404);
       }
