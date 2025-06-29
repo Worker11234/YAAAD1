@@ -100,13 +100,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
           {/* Right Section - Actions and User Menu */}
           {user && (
             <div className="flex items-center space-x-2 lg:space-x-4">
-              {/* Add Memory Button */}
-              <UploadButton
-                variant={isMobile ? "icon" : "full"}
-                label="Add Memory"
-                className="shadow-md"
-              />
-
               {/* Search Button (Mobile) */}
               {isMobile && (
                 <TouchOptimized>
@@ -119,17 +112,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
                   </Link>
                 </TouchOptimized>
               )}
-
-              {/* Privacy Button */}
-              <TouchOptimized>
-                <Link
-                  to="/privacy"
-                  className="p-2 lg:p-3 rounded-xl text-sage-600 hover:text-sage-700 hover:bg-sage-50 focus:outline-none focus:ring-2 focus:ring-sage-500 transition-colors"
-                  aria-label="Privacy controls"
-                >
-                  <Shield size={20} />
-                </Link>
-              </TouchOptimized>
 
               {/* Notifications */}
               <TouchOptimized>
@@ -215,16 +197,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
                         >
                           <Settings size={18} />
                           <span>Settings</span>
-                        </Link>
-
-                        <Link
-                          to="/privacy"
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-sage-50 transition-colors focus:outline-none focus:bg-sage-50"
-                          role="menuitem"
-                        >
-                          <Shield size={18} />
-                          <span>Privacy & Data</span>
                         </Link>
 
                         <button

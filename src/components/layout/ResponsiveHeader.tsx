@@ -50,7 +50,7 @@ export function ResponsiveHeader({ onSearchSubmit, onNotificationClick, onMenuTo
   const notificationCount = 3; // This would come from your state/API
 
   return (
-    <header className="bg-black shadow-lg border-b-2 border-sage-100 sticky top-0 z-40 safe-area-inset-top">
+    <header className="bg-white shadow-lg border-b-2 border-sage-100 sticky top-0 z-40 safe-area-inset-top">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
