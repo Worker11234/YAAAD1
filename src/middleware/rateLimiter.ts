@@ -59,7 +59,3 @@ export const uploadRateLimiter = rateLimit({
     }
   }
 });
-
-export { rateLimiter }
-
-export { uploadRateLimiter }
