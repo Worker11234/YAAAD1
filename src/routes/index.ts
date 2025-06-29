@@ -9,7 +9,7 @@ export const setupRoutes = (): Router => {
   const router = Router();
 
   // API documentation route
-  router.get('/docs', (req, res) => {
+  router.get('/docs', (_req, res) => {
     res.status(200).json({
       message: 'API Documentation',
       version: process.env.APP_VERSION || '1.0.0',
