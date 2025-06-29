@@ -44,7 +44,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'ok',
     version: process.env.APP_VERSION || '1.0.0',
