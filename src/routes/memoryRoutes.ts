@@ -1,15 +1,10 @@
 import { Router } from 'express';
 import { upload, validateImageUpload, validateSearch } from '../middleware/validator';
 import { rateLimiter, uploadRateLimiter } from '../middleware/rateLimiter';
-import {
-  analyzeMemories,
-  getMemories,
-  getMemoryById,
-  deleteMemory,
-  searchMemories
-} from '../controllers/memoryController';
+import { MemoriesController } from '../controllers/memoryController';
 
 const router = Router();
+const memoriesController = new MemoriesController();
 
 // Apply rate limiters
 router.use(rateLimiter);
@@ -20,12 +15,12 @@ router.post(
   uploadRateLimiter,
   upload.array('images', 10),
   validateImageUpload,
-  analyzeMemories
+  memoriesController.analyzeMemories.bind(memoriesController)
 );
 
-router.get('/', getMemories);
-router.get('/search', validateSearch, searchMemories);
-router.get('/:id', getMemoryById);
-router.delete('/:id', deleteMemory);
+router.get('/', memoriesController.getMemories.bind(memoriesController));
+router.get('/search', validateSearch, memoriesController.searchMemories.bind(memoriesController));
+router.get('/:id', memoriesController.getMemoryById.bind(memoriesController));
+router.delete('/:id', memoriesController.deleteMemory.bind(memoriesController));
 
 export default router;
