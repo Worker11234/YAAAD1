@@ -1,53 +1,33 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Heart, User, LogOut, Settings, Bell, Search, Menu } from 'lucide-react';
+import { Heart, Search, Bell, User, ChevronDown, LogOut, Settings, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { TouchOptimized } from '../ui/TouchOptimized';
 import { NotificationBadge } from '../navigation/NotificationBadge';
-import SearchComponent from '../ui/animated-glowing-search-bar';
 
 interface ResponsiveHeaderProps {
   onSearchSubmit?: (query: string) => void;
   onNotificationClick?: () => void;
-  onMenuToggle?: () => void;
 }
 
-export function ResponsiveHeader({ onSearchSubmit, onNotificationClick, onMenuToggle }: ResponsiveHeaderProps) {
+export function ResponsiveHeader({ onSearchSubmit, onNotificationClick }: ResponsiveHeaderProps) {
   const { user, signOut } = useAuth();
-  const { isMobile } = useDeviceDetection();
-  const location = useLocation();
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [profileData, setProfileData] = useState<any>(null);
-  const [logoError, setLogoError] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notificationCount] = useState(3); // This would come from your state/API
+  const location = useLocation();
 
-  React.useEffect(() => {
-    // Fetch profile data if user is logged in
-    if (user) {
-      // In a real app with Supabase, we'd fetch from the database
-      // For now, we'll use localStorage
-      const storedProfile = localStorage.getItem('memorymesh_profile');
-      if (storedProfile) {
-        try {
-          setProfileData(JSON.parse(storedProfile));
-        } catch (error) {
-          console.error('Error parsing stored profile:', error);
-        }
-      }
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim() && onSearchSubmit) {
+      onSearchSubmit(searchQuery);
     }
-  }, [user]);
+  };
 
   const handleSignOut = async () => {
     await signOut();
+    setShowUserMenu(false);
   };
-
-  const handleLogoError = () => {
-    console.log('Logo failed to load, showing fallback');
-    setLogoError(true);
-  };
-
-  const notificationCount = 3; // This would come from your state/API
 
   return (
     <header className="bg-white shadow-lg border-b-2 border-sage-100 sticky top-0 z-40 safe-area-inset-top">
@@ -70,18 +50,28 @@ export function ResponsiveHeader({ onSearchSubmit, onNotificationClick, onMenuTo
 
           {/* Search Bar */}
           <div className="hidden md:block flex-1 max-w-md mx-8">
-            <SearchComponent />
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-base border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors bg-white"
+                placeholder="Search memories, people, or dates..."
+                aria-label="Search memories"
+              />
+            </form>
           </div>
 
           {/* Right Section - Notifications & User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Search Icon (Mobile) */}
+            {/* Messages */}
             <Link
-              to="/search"
-              className="md:hidden p-2 rounded-lg text-sage-600 hover:text-sage-700 hover:bg-sage-50 transition-colors"
-              aria-label="Search"
+              to="/messaging"
+              className="hidden sm:block p-2 rounded-lg text-sage-600 hover:text-sage-700 hover:bg-sage-50 transition-colors"
+              aria-label="Messages"
             >
-              <Search size={20} />
+              <MessageCircle size={20} />
             </Link>
 
             {/* Notifications */}
@@ -119,11 +109,7 @@ export function ResponsiveHeader({ onSearchSubmit, onNotificationClick, onMenuTo
                       <User size={20} className="text-sage-700" />
                     )}
                   </div>
-                  <span className="hidden sm:block text-gray-500">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
+                  <ChevronDown size={16} className="hidden sm:block text-gray-500" />
                 </button>
               </TouchOptimized>
 
