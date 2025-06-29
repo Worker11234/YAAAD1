@@ -1,4 +1,4 @@
-import Purchases, { CustomerInfo, PurchasesConfiguration } from '@revenuecat/purchases-js';
+import { Purchases, CustomerInfo, PurchasesConfiguration } from '@revenuecat/purchases-js';
 
 // Subscription tiers
 export enum SubscriptionTier {
