@@ -32,6 +32,8 @@ const MessagingPage = lazy(() => import('./pages/MessagingPage').then(module => 
 const PrivacyControlsPage = lazy(() => import('./pages/PrivacyControlsPage').then(module => ({ default: module.PrivacyControlsPage })));
 const DesignSystemPage = lazy(() => import('./pages/DesignSystemPage').then(module => ({ default: module.DesignSystemPage })));
 const FamilyPage = lazy(() => import('./pages/FamilyPage').then(module => ({ default: module.FamilyPage })));
+const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(module => ({ default: module.SubscriptionPage })));
+const SubscriptionDashboardPage = lazy(() => import('./pages/SubscriptionDashboardPage').then(module => ({ default: module.SubscriptionDashboardPage })));
 
 function App() {
   const { user, loading } = useAuth();
@@ -80,6 +82,29 @@ function App() {
                       <Navigate to="/dashboard" replace />
                     ) : (
                       <OnboardingPage />
+                    )
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
+              
+              {/* Subscription Routes */}
+              <Route
+                path="/pricing"
+                element={<SubscriptionPage />}
+              />
+              
+              <Route
+                path="/subscription"
+                element={
+                  user ? (
+                    hasCompletedOnboarding ? (
+                      <Layout>
+                        <SubscriptionDashboardPage />
+                      </Layout>
+                    ) : (
+                      <Navigate to="/onboarding" replace />
                     )
                   ) : (
                     <Navigate to="/auth" replace />

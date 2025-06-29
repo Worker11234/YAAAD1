@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Clock, BarChart2, Trophy } from 'lucide-react';
+import { Star, Clock, BarChart2, Trophy, Lock } from 'lucide-react';
 import { TouchOptimized } from '../ui/TouchOptimized';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import { useSubscription } from '../../hooks/useSubscription';
+import { Feature } from '../../lib/revenuecat';
 
 interface Game {
   id: string;
@@ -17,6 +19,7 @@ interface Game {
   lastPlayed: string | null;
   progress: number;
   thumbnail: string | null;
+  requiredFeature?: Feature; // Optional feature requirement
 }
 
 interface GameCardProps {
@@ -26,6 +29,10 @@ interface GameCardProps {
 
 export function GameCard({ game, className = '' }: GameCardProps) {
   const { isMobile } = useDeviceDetection();
+  const { isFeatureAvailable } = useSubscription();
+  
+  // Check if the game is available based on subscription
+  const isAvailable = !game.requiredFeature || isFeatureAvailable(game.requiredFeature);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -39,8 +46,10 @@ export function GameCard({ game, className = '' }: GameCardProps) {
   return (
     <TouchOptimized>
       <Link 
-        to={`/games/${game.id}`}
-        className={`block bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 ${className}`}
+        to={isAvailable ? `/games/${game.id}` : '/pricing'}
+        className={`block bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 ${
+          isAvailable ? '' : 'opacity-75'
+        } ${className}`}
       >
         <div className="relative">
           {/* Game Thumbnail or Icon */}
@@ -64,6 +73,15 @@ export function GameCard({ game, className = '' }: GameCardProps) {
                 />
               </div>
             )}
+            
+            {/* Lock overlay for unavailable games */}
+            {!isAvailable && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="bg-white p-2 rounded-full">
+                  <Lock className="w-8 h-8 text-gray-700" />
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Badges */}
@@ -77,6 +95,12 @@ export function GameCard({ game, className = '' }: GameCardProps) {
               <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full flex items-center">
                 <Star className="w-3 h-3 mr-1" />
                 <span>TOP PICK</span>
+              </span>
+            )}
+            {!isAvailable && (
+              <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center">
+                <Lock className="w-3 h-3 mr-1" />
+                <span>PREMIUM</span>
               </span>
             )}
           </div>

@@ -3,6 +3,9 @@ import { Plus, Camera, Upload as UploadIcon, Mic, FileText, X } from 'lucide-rea
 import { TouchOptimized } from '../ui/TouchOptimized';
 import { MemoryUploadModal } from './MemoryUploadModal';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import { useSubscription } from '../../hooks/useSubscription';
+import { Feature } from '../../lib/revenuecat';
+import { UpgradePrompt } from '../subscription/UpgradePrompt';
 
 interface UploadButtonProps {
   className?: string;
@@ -21,8 +24,21 @@ export function UploadButton({
   const [showModal, setShowModal] = useState(false);
   const [uploadType, setUploadType] = useState<'photo' | 'video' | 'audio' | 'story' | null>(null);
   const { isMobile } = useDeviceDetection();
-
+  const { hasReachedStorageLimit, isFeatureAvailable } = useSubscription();
+  
+  // Check if storage limit is reached
+  const storageLimit = hasReachedStorageLimit();
+  
   const handleUploadTypeSelect = (type: 'photo' | 'video' | 'audio' | 'story') => {
+    // Check if storage limit is reached
+    if (storageLimit) {
+      // Show upgrade prompt
+      setUploadType(null);
+      setShowModal(false);
+      setShowMenu(false);
+      return;
+    }
+    
     setUploadType(type);
     setShowModal(true);
     setShowMenu(false);
@@ -38,7 +54,7 @@ export function UploadButton({
   if (variant === 'fab') {
     return (
       <>
-        <div className={`fixed bottom-6 right-6 z-40 ${className} ${isMobile ? 'hidden' : 'block'}`}>
+        <div className={`fixed bottom-6 right-6 z-40 ${className}`}>
           {/* Menu Items */}
           {showMenu && (
             <>
@@ -129,6 +145,13 @@ export function UploadButton({
             initialType={uploadType || undefined}
           />
         )}
+        
+        {/* Storage Limit Warning */}
+        {storageLimit && (
+          <div className="fixed bottom-24 right-6 z-40 max-w-xs">
+            <UpgradePrompt feature={Feature.STORAGE_FAMILY} compact />
+          </div>
+        )}
       </>
     );
   }
@@ -139,8 +162,10 @@ export function UploadButton({
       <>
         <TouchOptimized>
           <button
-            onClick={() => setShowModal(true)}
-            className={`p-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${isMobile ? 'hidden' : 'block'}`}
+            onClick={() => storageLimit ? null : setShowModal(true)}
+            className={`p-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${
+              storageLimit ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             aria-label="Upload memory"
           >
             <Plus size={isMobile ? 20 : 24} />
@@ -158,6 +183,13 @@ export function UploadButton({
             }}
           />
         )}
+        
+        {/* Storage Limit Warning */}
+        {storageLimit && (
+          <div className="absolute top-full mt-2 right-0 z-40 w-64">
+            <UpgradePrompt feature={Feature.STORAGE_FAMILY} compact />
+          </div>
+        )}
       </>
     );
   }
@@ -167,8 +199,10 @@ export function UploadButton({
     <>
       <TouchOptimized>
         <button
-          onClick={() => setShowModal(true)}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${isMobile ? 'hidden' : 'block'}`}
+          onClick={() => storageLimit ? null : setShowModal(true)}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${
+            storageLimit ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           <Plus size={isMobile ? 18 : 20} />
           <span>{label}</span>
@@ -185,6 +219,13 @@ export function UploadButton({
             setShowModal(false);
           }}
         />
+      )}
+      
+      {/* Storage Limit Warning */}
+      {storageLimit && (
+        <div className="absolute top-full mt-2 left-0 z-40 w-64">
+          <UpgradePrompt feature={Feature.STORAGE_FAMILY} compact />
+        </div>
       )}
     </>
   );
