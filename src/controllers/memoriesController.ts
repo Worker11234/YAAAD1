@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { imageAnalysisQueue } from '../queues';
 import { imageService } from '../services/imageService';
-import { db } from '../services/supabase';
+import { db, supabase } from '../services/supabase';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
@@ -30,7 +30,7 @@ export class MemoriesController {
       );
 
       // Get total count
-      const { count, error: countError } = await db.supabase
+      const { count, error: countError } = await supabase
         .from('memories')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
@@ -110,7 +110,7 @@ export class MemoriesController {
       const offset = parseInt(req.query.offset as string || '0', 10);
 
       // Build query
-      let memoriesQuery = db.supabase
+      let memoriesQuery = supabase
         .from('memories')
         .select(`
           *,
@@ -310,7 +310,7 @@ export class MemoriesController {
       }
 
       // Get remaining storage quota
-      const { data: user } = await db.supabase
+      const { data: user } = await supabase
         .from('users')
         .select('storage_quota_mb')
         .eq('id', userId)
@@ -395,7 +395,7 @@ export class MemoriesController {
       if (imageUrl) {
         const imagePath = new URL(imageUrl).pathname.split('/').pop();
         if (imagePath) {
-          await db.supabase.storage
+          await supabase.storage
             .from('memory_media')
             .remove([`${userId}/${imagePath}`]);
         }
@@ -404,7 +404,7 @@ export class MemoriesController {
       if (thumbnailUrl) {
         const thumbnailPath = new URL(thumbnailUrl).pathname.split('/').pop();
         if (thumbnailPath) {
-          await db.supabase.storage
+          await supabase.storage
             .from('memory_media')
             .remove([`${userId}/${thumbnailPath}`]);
         }
@@ -428,7 +428,7 @@ export class MemoriesController {
       }
 
       // Get total count
-      const { count: totalCount, error: countError } = await db.supabase
+      const { count: totalCount, error: countError } = await supabase
         .from('memories')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
@@ -438,7 +438,7 @@ export class MemoriesController {
       }
 
       // Get counts by type
-      const { data: typeCounts, error: typeError } = await db.supabase
+      const { data: typeCounts, error: typeError } = await supabase
         .from('memories')
         .select('memory_type, count(*)')
         .eq('user_id', userId)
@@ -449,7 +449,7 @@ export class MemoriesController {
       }
 
       // Get counts by month
-      const { data: monthCounts, error: monthError } = await db.supabase
+      const { data: monthCounts, error: monthError } = await supabase
         .from('memories')
         .select('date_trunc(\'month\', taken_at) as month, count(*)')
         .eq('user_id', userId)
@@ -461,7 +461,7 @@ export class MemoriesController {
       }
 
       // Get top tags
-      const { data: topTags, error: tagsError } = await db.supabase
+      const { data: topTags, error: tagsError } = await supabase
         .from('tags')
         .select('tag_name, count(*)')
         .eq('created_by', userId)
@@ -507,7 +507,7 @@ export class MemoriesController {
       }
 
       // Build query
-      let query = db.supabase
+      let query = supabase
         .from('memories')
         .select(select)
         .eq('user_id', userId)
@@ -516,7 +516,7 @@ export class MemoriesController {
 
       // Apply cursor pagination if provided
       if (cursor) {
-        const { data: cursorMemory } = await db.supabase
+        const { data: cursorMemory } = await supabase
           .from('memories')
           .select('created_at')
           .eq('id', cursor)
@@ -566,7 +566,7 @@ export class MemoriesController {
     try {
       if (selectedTags.length === 0) {
         // Get most popular tags
-        const { data } = await db.supabase
+        const { data } = await supabase
           .from('tags')
           .select('tag_name, count(*)')
           .eq('created_by', userId)
@@ -577,12 +577,12 @@ export class MemoriesController {
         return data?.map(tag => tag.tag_name) || [];
       } else {
         // Get co-occurring tags
-        const { data } = await db.supabase
+        const { data } = await supabase
           .from('tags')
           .select('tag_name, count(*)')
           .eq('created_by', userId)
           .not('tag_name', 'in', `(${selectedTags.join(',')})`)
-          .in('memory_id', db.supabase
+          .in('memory_id', supabase
             .from('tags')
             .select('memory_id')
             .in('tag_name', selectedTags)
@@ -603,7 +603,7 @@ export class MemoriesController {
     try {
       if (selectedPeople.length === 0) {
         // Get most frequently appearing people
-        const { data } = await db.supabase
+        const { data } = await supabase
           .from('people')
           .select('name')
           .eq('user_id', userId)
@@ -613,18 +613,18 @@ export class MemoriesController {
         return data?.map(person => person.name) || [];
       } else {
         // Get people who appear in the same photos
-        const { data } = await db.supabase
+        const { data } = await supabase
           .from('people')
           .select('name')
           .eq('user_id', userId)
           .not('name', 'in', `(${selectedPeople.join(',')})`)
-          .in('id', db.supabase
+          .in('id', supabase
             .from('face_detections')
             .select('person_id')
-            .in('memory_id', db.supabase
+            .in('memory_id', supabase
               .from('face_detections')
               .select('memory_id')
-              .in('person_id', db.supabase
+              .in('person_id', supabase
                 .from('people')
                 .select('id')
                 .in('name', selectedPeople)
