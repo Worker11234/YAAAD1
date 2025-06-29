@@ -234,3 +234,17 @@ html {
 .app-name {
   font-family: 'YaadeinFont', sans-serif;
 }
+
+/* Animation for the dock */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}

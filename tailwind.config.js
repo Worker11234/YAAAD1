@@ -27,7 +27,14 @@ export default {
           700: '#2d5738',
           800: '#1e3a24',
           900: '#0f1d12',
-        }
+        },
+        // For the dock component
+        background: 'white',
+        foreground: '#374151',
+        border: '#e5e7eb',
+        secondary: '#f3f4f6',
+        popover: '#ffffff',
+        'popover-foreground': '#374151'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

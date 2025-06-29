@@ -1,7 +1,26 @@
-import SearchComponent from "./animated-glowing-search-bar";
+import { Dock } from "./dock-two"
+import {
+  Home,
+  Search,
+  Music,
+  Heart,
+  Settings,
+  Plus,
+  User
+} from "lucide-react"
 
-const DemoOne = () => {
-  return <SearchComponent />;
-};
+function DockDemo() {
+  const items = [
+    { icon: Home, label: "Home" },
+    { icon: Search, label: "Search" },
+    { icon: Music, label: "Music" },
+    { icon: Heart, label: "Favorites" },
+    { icon: Plus, label: "Add New" },
+    { icon: User, label: "Profile" },
+    { icon: Settings, label: "Settings" }
+  ]
 
-export { DemoOne };
+  return <Dock items={items} />
+}
+
+export { DockDemo }
