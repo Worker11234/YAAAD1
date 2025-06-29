@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { upload, validateImageUpload, validateSearch } from '../middleware/validator';
 import { rateLimiter, uploadRateLimiter } from '../middleware/rateLimiter';
-import { MemoriesController } from '../controllers/memoryController';
+import { MemoriesController } from '../controllers/memoriesController';
 
 const router = Router();
 const memoriesController = new MemoriesController();
