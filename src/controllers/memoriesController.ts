@@ -23,7 +23,7 @@ interface InsertedMemory {
   processing_status: string;
 }
 
-interface NewMemory {
+interface NewMemoryInput {
   user_id: string;
   image_url: string;
   thumbnail_url: string;
@@ -286,7 +286,7 @@ export class MemoriesController {
           );
 
           // Create memory record
-          const newMemoryData: NewMemory = {
+          const newMemoryData: NewMemoryInput = {
             user_id: userId,
             image_url: imageUrl,
             thumbnail_url: thumbnailUrl,
@@ -479,40 +479,28 @@ export class MemoriesController {
         throw new AppError('Failed to get memory count', 500);
       }
 
-      // Get counts by type
+      // Get counts by type - using raw SQL for proper grouping
       const { data: typeCounts, error: typeError } = await supabase
-        .from('memories')
-        .select('memory_type, count(*)')
-        .eq('user_id', userId)
-        .group('memory_type');
+        .rpc('get_memory_type_counts', { user_id: userId });
 
       if (typeError) {
-        throw new AppError('Failed to get memory type counts', 500);
+        logger.warn('Failed to get memory type counts, using fallback', typeError);
       }
 
-      // Get counts by month
+      // Get counts by month - using raw SQL for proper grouping
       const { data: monthCounts, error: monthError } = await supabase
-        .from('memories')
-        .select('date_trunc(\'month\', taken_at) as month, count(*)')
-        .eq('user_id', userId)
-        .group('month')
-        .order('month', { ascending: false });
+        .rpc('get_memory_month_counts', { user_id: userId });
 
       if (monthError) {
-        throw new AppError('Failed to get memory month counts', 500);
+        logger.warn('Failed to get memory month counts, using fallback', monthError);
       }
 
-      // Get top tags
+      // Get top tags - using raw SQL for proper grouping
       const { data: topTags, error: tagsError } = await supabase
-        .from('tags')
-        .select('tag_name, count(*)')
-        .eq('created_by', userId)
-        .group('tag_name')
-        .order('count', { ascending: false })
-        .limit(10);
+        .rpc('get_top_tags', { user_id: userId, tag_limit: 10 });
 
       if (tagsError) {
-        throw new AppError('Failed to get top tags', 500);
+        logger.warn('Failed to get top tags, using fallback', tagsError);
       }
 
       res.json({
@@ -609,31 +597,19 @@ export class MemoriesController {
       if (selectedTags.length === 0) {
         // Get most popular tags
         const { data } = await supabase
-          .from('tags')
-          .select('tag_name, count(*)')
-          .eq('created_by', userId)
-          .group('tag_name')
-          .order('count', { ascending: false })
-          .limit(10);
+          .rpc('get_popular_tags', { user_id: userId, tag_limit: 10 });
 
-        return data?.map(tag => tag.tag_name) || [];
+        return data?.map((tag: any) => tag.tag_name) || [];
       } else {
         // Get co-occurring tags
         const { data } = await supabase
-          .from('tags')
-          .select('tag_name, count(*)')
-          .eq('created_by', userId)
-          .not('tag_name', 'in', `(${selectedTags.join(',')})`)
-          .in('memory_id', supabase
-            .from('tags')
-            .select('memory_id')
-            .in('tag_name', selectedTags)
-          )
-          .group('tag_name')
-          .order('count', { ascending: false })
-          .limit(10);
+          .rpc('get_cooccurring_tags', { 
+            user_id: userId, 
+            selected_tags: selectedTags,
+            tag_limit: 10 
+          });
 
-        return data?.map(tag => tag.tag_name) || [];
+        return data?.map((tag: any) => tag.tag_name) || [];
       }
     } catch (error) {
       logger.error('Error getting related tags:', error);
@@ -656,26 +632,13 @@ export class MemoriesController {
       } else {
         // Get people who appear in the same photos
         const { data } = await supabase
-          .from('people')
-          .select('name')
-          .eq('user_id', userId)
-          .not('name', 'in', `(${selectedPeople.join(',')})`)
-          .in('id', supabase
-            .from('face_detections')
-            .select('person_id')
-            .in('memory_id', supabase
-              .from('face_detections')
-              .select('memory_id')
-              .in('person_id', supabase
-                .from('people')
-                .select('id')
-                .in('name', selectedPeople)
-              )
-            )
-          )
-          .limit(10);
+          .rpc('get_cooccurring_people', {
+            user_id: userId,
+            selected_people: selectedPeople,
+            people_limit: 10
+          });
 
-        return data?.map(person => person.name) || [];
+        return data?.map((person: any) => person.name) || [];
       }
     } catch (error) {
       logger.error('Error getting related people:', error);
