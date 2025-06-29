@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MemoryMesh</string>
+    <string name="title_activity_main">MemoryMesh</string>
+    <string name="package_name">com.memorymesh.app</string>
+    <string name="custom_url_scheme">com.memorymesh.app</string>
+</resources>

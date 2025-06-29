@@ -1,0 +1,18 @@
+# Allow all web crawlers
+User-agent: *
+Allow: /
+
+# Disallow sensitive routes
+Disallow: /auth
+Disallow: /settings
+Disallow: /privacy
+Disallow: /dashboard
+Disallow: /upload
+Disallow: /family
+Disallow: /games
+Disallow: /search
+Disallow: /activity
+Disallow: /messaging
+
+# Sitemap
+Sitemap: https://memorymesh.app/sitemap.xml
