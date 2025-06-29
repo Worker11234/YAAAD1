@@ -30,7 +30,7 @@
     "@capacitor/share": "^6.0.0",
     "@capacitor/splash-screen": "^6.0.0",
     "@capacitor/status-bar": "^6.0.0",
-    "@revenuecat/purchases-js": "^2.7.1",
+    "@revenuecat/purchases-js": "^1.7.0",
     "@supabase/supabase-js": "^2.50.2",
     "@tsparticles/engine": "^3.0.3",
     "@tsparticles/react": "^3.0.0",
