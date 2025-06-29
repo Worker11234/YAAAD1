@@ -6,7 +6,6 @@ import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { TouchOptimized } from '../ui/TouchOptimized';
 import { NotificationBadge } from '../navigation/NotificationBadge';
 import { UploadButton } from '../upload/UploadButton';
-import SearchComponent from '../ui/animated-glowing-search-bar';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -93,13 +92,30 @@ export function Header({ onMenuToggle }: HeaderProps) {
           {/* Center Section - Search Bar (Desktop) */}
           {!isMobile && (
             <div className="flex-1 max-w-2xl mx-8">
-              <SearchComponent />
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors bg-gray-50 hover:bg-white"
+                  placeholder="Search memories, people, or dates..."
+                  aria-label="Search memories"
+                />
+              </div>
             </div>
           )}
 
           {/* Right Section - Actions and User Menu */}
           {user && (
             <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Add Memory Button */}
+              <UploadButton
+                variant={isMobile ? "icon" : "full"}
+                label="Add Memory"
+                className="shadow-md"
+              />
+
               {/* Search Button (Mobile) */}
               {isMobile && (
                 <TouchOptimized>
@@ -112,6 +128,17 @@ export function Header({ onMenuToggle }: HeaderProps) {
                   </Link>
                 </TouchOptimized>
               )}
+
+              {/* Privacy Button */}
+              <TouchOptimized>
+                <Link
+                  to="/privacy"
+                  className="p-2 lg:p-3 rounded-xl text-sage-600 hover:text-sage-700 hover:bg-sage-50 focus:outline-none focus:ring-2 focus:ring-sage-500 transition-colors"
+                  aria-label="Privacy controls"
+                >
+                  <Shield size={20} />
+                </Link>
+              </TouchOptimized>
 
               {/* Notifications */}
               <TouchOptimized>
@@ -197,6 +224,16 @@ export function Header({ onMenuToggle }: HeaderProps) {
                         >
                           <Settings size={18} />
                           <span>Settings</span>
+                        </Link>
+
+                        <Link
+                          to="/privacy"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-sage-50 transition-colors focus:outline-none focus:bg-sage-50"
+                          role="menuitem"
+                        >
+                          <Shield size={18} />
+                          <span>Privacy & Data</span>
                         </Link>
 
                         <button

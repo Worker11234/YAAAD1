@@ -38,7 +38,7 @@ export function UploadButton({
   if (variant === 'fab') {
     return (
       <>
-        <div className={`fixed bottom-6 right-6 z-40 ${className}`}>
+        <div className={`fixed bottom-6 right-6 z-40 ${className} ${isMobile ? 'hidden' : 'block'}`}>
           {/* Menu Items */}
           {showMenu && (
             <>
@@ -140,7 +140,7 @@ export function UploadButton({
         <TouchOptimized>
           <button
             onClick={() => setShowModal(true)}
-            className={`p-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className}`}
+            className={`p-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${isMobile ? 'hidden' : 'block'}`}
             aria-label="Upload memory"
           >
             <Plus size={isMobile ? 20 : 24} />
@@ -168,7 +168,7 @@ export function UploadButton({
       <TouchOptimized>
         <button
           onClick={() => setShowModal(true)}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className}`}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-white bg-sage-700 hover:bg-sage-800 transition-colors ${className} ${isMobile ? 'hidden' : 'block'}`}
         >
           <Plus size={isMobile ? 18 : 20} />
           <span>{label}</span>
