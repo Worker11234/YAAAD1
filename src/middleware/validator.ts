@@ -21,13 +21,13 @@ export const validate = (validations: ValidationChain[]) => {
       });
     }
 
-    next();
+    return next();
   };
 };
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedTypes = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/webp').split(',');
   
   if (allowedTypes.includes(file.mimetype)) {
@@ -54,9 +54,9 @@ export const validateImageUpload = [
   body('auto_tag').optional().isBoolean().withMessage('auto_tag must be a boolean'),
   body('detect_faces').optional().isBoolean().withMessage('detect_faces must be a boolean'),
   body('extract_text').optional().isBoolean().withMessage('extract_text must be a boolean'),
-  (req: Request, res: Response, next: NextFunction) => {
+  (_req: Request, _res: Response, next: NextFunction) => {
     // Validate file types and sizes
-    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+    if (!_req.files || (Array.isArray(_req.files) && _req.files.length === 0)) {
       return next(new AppError('No files uploaded', 400));
     }
     
