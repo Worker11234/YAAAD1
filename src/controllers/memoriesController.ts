@@ -564,8 +564,15 @@ export class MemoriesController {
         throw new AppError(`Failed to get memories: ${error.message}`, 500);
       }
 
-      // Determine next cursor - add type assertion to ensure TypeScript knows the element has an id property
-      const nextCursor = memories && memories.length === limit ? (memories[memories.length - 1] as InsertedMemory).id : null;
+      // Determine next cursor with proper type checking
+      let nextCursor = null;
+      if (memories && memories.length === limit) {
+        const lastMemory = memories[memories.length - 1];
+        // Check if the last memory has an id property before accessing it
+        if (lastMemory && typeof lastMemory === 'object' && 'id' in lastMemory) {
+          nextCursor = (lastMemory as InsertedMemory).id;
+        }
+      }
 
       res.json({
         success: true,
