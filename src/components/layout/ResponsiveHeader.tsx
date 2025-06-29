@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, User, LogOut, Settings, Bell, Search, Plus, Shield } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Heart, User, LogOut, Settings, Bell, Search, Plus, Shield, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { TouchOptimized } from '../ui/TouchOptimized';
@@ -11,9 +11,10 @@ import SearchComponent from '../ui/animated-glowing-search-bar';
 interface ResponsiveHeaderProps {
   onSearchSubmit?: (query: string) => void;
   onNotificationClick?: () => void;
+  onMenuToggle?: () => void;
 }
 
-export function ResponsiveHeader({ onSearchSubmit, onNotificationClick }: ResponsiveHeaderProps) {
+export function ResponsiveHeader({ onSearchSubmit, onNotificationClick, onMenuToggle }: ResponsiveHeaderProps) {
   const { user, signOut } = useAuth();
   const { isMobile } = useDeviceDetection();
   const location = useLocation();
