@@ -303,7 +303,7 @@ export class MemoriesController {
             processing_status: 'pending'
           };
 
-          const memory: InsertedMemory = await db.insert('memories', newMemoryData);
+          const memory = await db.insert<InsertedMemory>('memories', newMemoryData);
 
           // Add to collection if specified
           if (collectionId) {
@@ -564,8 +564,8 @@ export class MemoriesController {
         throw new AppError(`Failed to get memories: ${error.message}`, 500);
       }
 
-      // Determine next cursor
-      const nextCursor = memories && memories.length === limit ? memories[memories.length - 1].id : null;
+      // Determine next cursor - add type assertion to ensure TypeScript knows the element has an id property
+      const nextCursor = memories && memories.length === limit ? (memories[memories.length - 1] as InsertedMemory).id : null;
 
       res.json({
         success: true,
