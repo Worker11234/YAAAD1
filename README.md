@@ -1,172 +1,146 @@
-# MemoryMesh - Family Memory Preservation App
+# Yaadein AI Backend
 
-A collaborative platform for families to preserve, organize, and share precious memories. Built with React, TypeScript, and Capacitor for native mobile app deployment.
+A production-ready Node.js Express backend for Yaadein AI, an intelligent photo tagging and memory management system. This backend powers AI-driven image analysis, smart tag generation, facial recognition, and interactive memory games to help users organize and rediscover their precious memories.
 
-## Features
+## 🎯 Project Overview
 
-- 📸 **Memory Capture**: Upload photos, videos, and audio recordings
-- 👨‍👩‍👧‍👦 **Family Collaboration**: Invite family members to contribute
-- 🏷️ **Smart Organization**: AI-powered tagging and categorization
-- 🎮 **Memory Games**: Cognitive wellness activities
-- 🔍 **Advanced Search**: Find memories quickly
-- 🔒 **Privacy Controls**: Secure family data
-- 📱 **Native Mobile App**: Available for Android and iOS
+Yaadein AI Backend is a robust, scalable backend that analyzes uploaded images using state-of-the-art AI models, generates contextually relevant tags, implements facial recognition for people tagging, and provides gamified experiences for users to interact with their memory collections.
 
-## Tech Stack
+## 🏗️ Technology Stack
 
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Backend**: Supabase (Auth, Database, Storage)
-- **Mobile**: Capacitor for native iOS/Android apps
-- **Icons**: Lucide React
-- **Routing**: React Router
-- **Build Tool**: Vite
+- **Runtime**: Node.js 18+ with Express.js
+- **Language**: TypeScript for type safety and better development experience
+- **AI Models**: Hugging Face Inference API + OpenAI Vision API fallback
+  - Primary: `Salesforce/blip-image-captioning-large` for image captioning
+  - Secondary: `microsoft/DialoGPT-medium` for conversational tag suggestions
+  - Facial Recognition: `microsoft/DialoGPT-medium` for face detection
+  - Tag Generation: `mistralai/Mistral-7B-Instruct-v0.1` for intelligent tagging
+- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
+- **File Storage**: Supabase Storage with CDN optimization
+- **Image Processing**: Sharp.js for optimization
+- **Caching**: Redis for high-performance caching
+- **Queue Management**: Bull Queue for background processing
+- **Security**: Helmet.js, rate limiting, input validation with Express Validator
+- **Monitoring**: Winston logging
 
-## Development Setup
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
+- Node.js 18+
+- Redis server
+- Supabase account and project
+- Hugging Face API key (for AI features)
+- OpenAI API key (optional, for fallback)
 
 ### Installation
 
-1. **Clone and install dependencies:**
+1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd memorymesh
+   git clone https://github.com/yourusername/yaadein-ai-backend.git
+   cd yaadein-ai-backend
+   ```
+
+2. Install dependencies:
+   ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
+3. Create a `.env` file based on `.env.example`:
    ```bash
    cp .env.example .env
-   # Edit .env with your Supabase credentials
    ```
 
-3. **Start development server:**
+4. Update the `.env` file with your credentials and configuration.
+
+5. Start the development server:
    ```bash
    npm run dev
    ```
 
-## Mobile App Development
-
-### Android Setup
-
-1. **Add Android platform:**
+6. Start the worker processes (in a separate terminal):
    ```bash
-   npm run cap:add:android
+   npm run queue:worker
    ```
 
-2. **Build and sync:**
-   ```bash
-   npm run android:build
-   ```
+## 🗄️ Database Schema
 
-3. **Open in Android Studio:**
-   ```bash
-   npm run android:open
-   ```
+The backend uses Supabase PostgreSQL with the following core tables:
 
-4. **Run on device/emulator:**
-   ```bash
-   npm run android:dev
-   ```
+- `users`: User profiles and preferences
+- `memories`: Uploaded images and metadata
+- `tags`: AI-generated and user-created tags
+- `people`: Recognized individuals in photos
+- `face_detections`: Detected faces in images
+- `game_sessions`: Memory game sessions
+- `collections`: Memory collections/albums
 
-### iOS Setup
+## 🚀 API Endpoints
 
-1. **Add iOS platform:**
-   ```bash
-   npm run cap:add:ios
-   ```
+### Memory Management
 
-2. **Build and sync:**
-   ```bash
-   npm run ios:build
-   ```
+- `POST /api/v1/memories/analyze`: Upload and analyze images
+- `GET /api/v1/memories`: Get user's memories
+- `GET /api/v1/memories/:id`: Get a specific memory
+- `DELETE /api/v1/memories/:id`: Delete a memory
+- `GET /api/v1/memories/search`: Search memories
 
-3. **Open in Xcode:**
-   ```bash
-   npm run ios:open
-   ```
+### People & Face Management
 
-## Building for Production
+- `POST /api/v1/people`: Create a new person
+- `GET /api/v1/people`: Get all people
+- `GET /api/v1/people/:id`: Get a specific person
+- `PUT /api/v1/people/:id`: Update a person
+- `DELETE /api/v1/people/:id`: Delete a person
+- `GET /api/v1/people/:id/memories`: Get memories containing a person
+- `POST /api/v1/memories/:memory_id/faces/verify`: Verify a face detection
 
-### Web App
+### Collections
+
+- `POST /api/v1/collections`: Create a collection
+- `GET /api/v1/collections`: Get all collections
+- `GET /api/v1/collections/:id`: Get a specific collection
+- `PUT /api/v1/collections/:id`: Update a collection
+- `DELETE /api/v1/collections/:id`: Delete a collection
+- `POST /api/v1/collections/:id/memories`: Add a memory to a collection
+- `DELETE /api/v1/collections/:id/memories/:memory_id`: Remove a memory from a collection
+- `POST /api/v1/collections/auto-generate`: Generate a smart collection
+
+### Games
+
+- `POST /api/v1/games/start`: Start a new game session
+- `POST /api/v1/games/:session_id/answer`: Submit an answer
+- `GET /api/v1/games/history`: Get game history
+- `GET /api/v1/games/achievements`: Get achievements
+
+## 🔒 Security
+
+- JWT authentication
+- Rate limiting
+- Input validation
+- Helmet.js for security headers
+- Supabase Row Level Security (RLS)
+
+## 🧪 Testing
+
 ```bash
-npm run build
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-### Android APK/AAB
-1. Open project in Android Studio: `npm run android:open`
-2. Build → Generate Signed Bundle/APK
-3. Follow the signing process for Play Store submission
+## 🚀 Deployment
 
-### iOS App
-1. Open project in Xcode: `npm run ios:open`
-2. Archive and upload to App Store Connect
+```bash
+# Build for production
+npm run build
 
-## Google Play Store Submission
+# Start production server
+npm start
+```
 
-### Prepare for Release
+## 📝 License
 
-1. **Update version in package.json and capacitor.config.ts**
-2. **Generate app icons and splash screens**
-3. **Create signed APK/AAB in Android Studio**
-4. **Test thoroughly on various devices**
-
-### Play Store Requirements
-
-- **App Icons**: 512x512 PNG (high-res icon)
-- **Screenshots**: Phone and tablet screenshots
-- **Feature Graphic**: 1024x500 PNG
-- **Privacy Policy**: Required for apps handling personal data
-- **App Description**: Compelling store listing
-- **Content Rating**: Complete questionnaire
-- **Target API Level**: Android 13+ (API 33+)
-
-### Store Listing Assets
-
-Create these assets for the Play Store:
-
-- **Short Description** (80 chars): "Preserve & share family memories together"
-- **Full Description**: Detailed feature list and benefits
-- **Keywords**: family, memories, photos, dementia, elderly, collaboration
-- **Screenshots**: Show key features and user interface
-- **Feature Graphic**: Branded promotional image
-
-## App Features for Store
-
-### Core Features
-- ✅ Family memory timeline
-- ✅ Photo/video/audio upload
-- ✅ User authentication
-- ✅ Responsive design
-- ✅ Offline support
-- ✅ Native camera integration
-- ✅ Share functionality
-- ✅ Haptic feedback
-
-### Planned Features
-- 🔄 AI-powered memory organization
-- 🔄 Memory recall games
-- 🔄 Advanced search
-- 🔄 Family member invitations
-- 🔄 Push notifications
-- 🔄 Cloud backup
-
-## Privacy & Security
-
-- End-to-end encryption for sensitive data
-- GDPR compliant data handling
-- Secure authentication with Supabase
-- Family-only access controls
-- Local data caching for offline use
-
-## Support
-
-For support and feature requests, contact: support@memorymesh.app
-
-## License
-
-Copyright © 2025 MemoryMesh. All rights reserved.
+This project is licensed under the MIT License - see the LICENSE file for details.
