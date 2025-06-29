@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
-  Search as SearchIcon, Grid, List, Mic, Filter, 
+  Grid, List, Mic, Filter, 
   Sparkles, Calendar, MapPin, X, Save, Download, 
   Share2, ArrowLeft, Layers, Bookmark, Clock, Star
 } from 'lucide-react';
-import { SearchBar } from '../components/search/SearchBar';
+import SearchComponent from '../components/ui/animated-glowing-search-bar';
 import { SearchFilters } from '../components/search/SearchFilters';
 import { SearchResults } from '../components/search/SearchResults';
 import { OnThisDayMemories } from '../components/search/OnThisDayMemories';
@@ -329,8 +329,8 @@ export function SearchPage() {
             description: 'Emma\'s first day of kindergarten',
             type: 'photo',
             thumbnail: 'https://images.pexels.com/photos/1001914/pexels-photo-1001914.jpeg?auto=compress&cs=tinysrgb&w=400',
-            date: '2024-09-05',
-            tags: ['School', 'Emma', 'First Day', 'Milestone', 'Growing Up'],
+            date: '2024-09-01',
+            tags: ['School', 'Kids', 'Milestone'],
             author: {
               name: 'Mom',
               avatar: undefined
@@ -460,7 +460,7 @@ export function SearchPage() {
       <div className="mb-6">
         <div className="flex items-center space-x-3 mb-4">
           <div className="bg-sage-700 p-3 rounded-xl">
-            <SearchIcon className="w-8 h-8 text-white" />
+            <Sparkles className="w-8 h-8 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Search & Discover</h1>
@@ -473,13 +473,7 @@ export function SearchPage() {
       
       {/* Search Bar */}
       <div className="mb-6 relative">
-        <SearchBar
-          onSearch={handleSearch}
-          placeholder="Search memories, people, places, or dates..."
-          initialQuery={query}
-          autoFocus={!isMobile && !initialQuery}
-          showVoiceSearch={false} // We'll use our custom voice search button
-        />
+        <SearchComponent />
         
         {/* Voice Search Button */}
         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
