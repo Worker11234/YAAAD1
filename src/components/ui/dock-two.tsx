@@ -1,7 +1,7 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
-import { DivideIcon as LucideIcon } from "lucide-react"
+import { LucideIcon } from "lucide-react"
 
 interface DockProps {
   className?: string
@@ -9,6 +9,7 @@ interface DockProps {
     icon: LucideIcon
     label: string
     onClick?: () => void
+    className?: string
   }[]
 }
 
@@ -45,7 +46,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
           className
         )}
       >
-        <Icon className="w-5 h-5 text-gray-700" />
+        <Icon className={cn("w-5 h-5 text-gray-700", className?.includes("bg-sage-700") ? "text-white" : "")} />
         <span className={cn(
           "absolute -top-8 left-1/2 -translate-x-1/2",
           "px-2 py-1 rounded text-xs",
