@@ -6,7 +6,10 @@ import { ApiError } from '../utils/apiError';
 // Create a new collection
 export const createCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { name, description, cover_memory_id, privacy_level } = req.body;
     
     // Create collection
@@ -43,7 +46,10 @@ export const createCollection = async (req: Request, res: Response) => {
 // Get all collections for a user
 export const getCollections = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     
     const { data: collections, error } = await supabase
       .from('collections')
@@ -82,7 +88,10 @@ export const getCollections = async (req: Request, res: Response) => {
 // Get collection by ID
 export const getCollectionById = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { collectionId } = req.params;
     
     // Get collection
@@ -125,12 +134,15 @@ export const getCollectionById = async (req: Request, res: Response) => {
 // Update collection
 export const updateCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { collectionId } = req.params;
     const { name, description, cover_memory_id, privacy_level } = req.body;
     
     // Check if collection exists and belongs to user
-    const { data: existingCollection, error: checkError } = await supabase
+    const { error: checkError } = await supabase
       .from('collections')
       .select('id')
       .eq('id', collectionId)
@@ -175,11 +187,14 @@ export const updateCollection = async (req: Request, res: Response) => {
 // Delete collection
 export const deleteCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { id } = req.params;
     
     // Check if collection exists and belongs to user
-    const { data: existingCollection, error: checkError } = await supabase
+    const { error: checkError } = await supabase
       .from('collections')
       .select('id')
       .eq('id', id)
@@ -216,12 +231,15 @@ export const deleteCollection = async (req: Request, res: Response) => {
 // Add memory to collection
 export const addMemoryToCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { id: collectionId } = req.params;
     const { memory_id } = req.body;
     
     // Check if collection exists and belongs to user
-    const { data: collection, error: collectionError } = await supabase
+    const { error: collectionError } = await supabase
       .from('collections')
       .select('id')
       .eq('id', collectionId)
@@ -233,7 +251,7 @@ export const addMemoryToCollection = async (req: Request, res: Response) => {
     }
     
     // Check if memory exists and belongs to user
-    const { data: memory, error: memoryError } = await supabase
+    const { error: memoryError } = await supabase
       .from('memories')
       .select('id')
       .eq('id', memory_id)
@@ -245,7 +263,7 @@ export const addMemoryToCollection = async (req: Request, res: Response) => {
     }
     
     // Check if memory is already in collection
-    const { data: existing, error: existingError } = await supabase
+    const { data: existing } = await supabase
       .from('memory_collections')
       .select('id')
       .eq('memory_id', memory_id)
@@ -287,11 +305,14 @@ export const addMemoryToCollection = async (req: Request, res: Response) => {
 // Remove memory from collection
 export const removeMemoryFromCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { id: collectionId, memory_id } = req.params;
     
     // Check if collection exists and belongs to user
-    const { data: collection, error: collectionError } = await supabase
+    const { error: collectionError } = await supabase
       .from('collections')
       .select('id')
       .eq('id', collectionId)
@@ -334,7 +355,10 @@ export const removeMemoryFromCollection = async (req: Request, res: Response) =>
 // Generate smart collection
 export const generateSmartCollection = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'User not authenticated');
+    }
     const { criteria } = req.body;
     
     // Basic implementation - you can enhance this with AI/ML logic
