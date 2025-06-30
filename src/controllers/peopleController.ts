@@ -4,7 +4,7 @@ import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { faceRecognitionQueue } from '../queues';
 
-export class PeopleController {
+class PeopleController {
   // Get all people for the authenticated user
   async getPeople(req: Request, res: Response, next: NextFunction) {
     try {
@@ -292,4 +292,17 @@ export class PeopleController {
   }
 }
 
-export { PeopleController }
+// Create an instance of the controller
+const peopleController = new PeopleController();
+
+// Export individual methods for use in routes
+export const createPerson = peopleController.createPerson.bind(peopleController);
+export const getPeople = peopleController.getPeople.bind(peopleController);
+export const getPersonById = peopleController.getPersonById.bind(peopleController);
+export const updatePerson = peopleController.updatePerson.bind(peopleController);
+export const deletePerson = peopleController.deletePerson.bind(peopleController);
+export const getPersonMemories = peopleController.getPersonMemories.bind(peopleController);
+export const verifyFace = peopleController.verifyFace.bind(peopleController);
+
+// Also export the class for potential future use
+export { PeopleController };
