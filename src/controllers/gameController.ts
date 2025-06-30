@@ -3,7 +3,6 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { AppError } from '../middleware/errorHandler';
 import { supabase } from '../services/supabaseService';
 import { logger } from '../utils/logger';
-import { QueueType, JobType, addJob } from '../services/queueService';
 
 export const startGameSession = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
@@ -11,7 +10,7 @@ export const startGameSession = asyncHandler(async (req: Request, res: Response)
   }
 
   const userId = req.user.id;
-  const { game_type, difficulty, duration_minutes, categories } = req.body;
+  const { game_type, difficulty, categories } = req.body;
 
   // Validate game type
   const validGameTypes = ['tag_guess', 'memory_match', 'timeline_quiz', 'face_recognition'];
@@ -327,7 +326,7 @@ export const getAchievements = asyncHandler(async (req: Request, res: Response) 
 });
 
 // Helper functions
-async function generateTagGuessQuestion(userId: string, difficulty: string, categories?: string[]) {
+async function generateTagGuessQuestion(_userId: string, _difficulty: string, _categories?: string[]) {
   // Implementation would fetch a memory and generate a tag guessing question
   // This is a simplified placeholder
   return {
@@ -350,7 +349,7 @@ async function generateTagGuessQuestion(userId: string, difficulty: string, cate
   };
 }
 
-async function generateMemoryMatchQuestion(userId: string, difficulty: string) {
+async function generateMemoryMatchQuestion(_userId: string, _difficulty: string) {
   // Implementation would generate a memory matching question
   // This is a simplified placeholder
   return {
@@ -368,7 +367,7 @@ async function generateMemoryMatchQuestion(userId: string, difficulty: string) {
   };
 }
 
-async function generateTimelineQuestion(userId: string, difficulty: string) {
+async function generateTimelineQuestion(_userId: string, _difficulty: string) {
   // Implementation would generate a timeline ordering question
   // This is a simplified placeholder
   return {
@@ -385,7 +384,7 @@ async function generateTimelineQuestion(userId: string, difficulty: string) {
   };
 }
 
-async function generateFaceRecognitionQuestion(userId: string, difficulty: string) {
+async function generateFaceRecognitionQuestion(_userId: string, _difficulty: string) {
   // Implementation would generate a face recognition question
   // This is a simplified placeholder
   return {
@@ -472,7 +471,7 @@ function calculateHints(difficulty: string): number {
   }[difficulty] || 3;
 }
 
-async function checkAchievements(userId: string, session: any): Promise<any[]> {
+async function checkAchievements(_userId: string, _session: any): Promise<any[]> {
   // This would check for achievements based on the game session
   // Simplified implementation
   return [];
