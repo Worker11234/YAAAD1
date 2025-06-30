@@ -4,6 +4,7 @@ export interface User {
   email: string;
   name?: string;
   avatar_url?: string;
+  role?: string; // Added role field
   subscription_tier?: string;
   created_at: string;
   updated_at: string;
@@ -67,6 +68,7 @@ declare global {
       user?: {
         id: string;
         email: string;
+        role?: string; // Added role field
         subscriptionTier?: string;
       };
     }
