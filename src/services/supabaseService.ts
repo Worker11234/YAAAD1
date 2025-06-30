@@ -29,7 +29,7 @@ export const supabasePublic = createClient(
 // Test connection
 export const testSupabaseConnection = async () => {
   try {
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    const { error } = await supabase.from('users').select('count').limit(1);
     
     if (error) {
       logger.error('Supabase connection test failed:', error);
