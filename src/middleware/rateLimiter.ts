@@ -46,6 +46,9 @@ export const rateLimiter = rateLimit({
   }
 });
 
+// Export as apiLimiter for backward compatibility
+export const apiLimiter = rateLimiter;
+
 // Specific rate limiter for uploads
 export const uploadRateLimiter = rateLimit({
   windowMs: WINDOW_MS,
