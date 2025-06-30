@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { db } from '../services/supabase';
+import { supabase } from '../services/supabaseService';
 import { AppError } from '../middleware/errorHandler';
-import { logger } from '../utils/logger';
-import { faceRecognitionQueue } from '../queues';
+import { Person, Memory, FaceDetection, CreatePersonRequest, VerifyFaceRequest } from '../types/database';
+// import { faceRecognitionQueue } from '../queues'; // Commented out until queues are set up
 
 class PeopleController {
   // Get all people for the authenticated user
@@ -14,16 +14,19 @@ class PeopleController {
       }
 
       // Get people from database
-      const people = await db.query('people', query => 
-        query
-          .select('*')
-          .eq('user_id', userId)
-          .order('name', { ascending: true })
-      );
+      const { data: people, error } = await supabase
+        .from('people')
+        .select('*')
+        .eq('user_id', userId)
+        .order('name', { ascending: true });
+
+      if (error) {
+        throw new AppError(`Failed to get people: ${error.message}`, 500);
+      }
 
       res.json({
         success: true,
-        data: people
+        data: people || []
       });
     } catch (error) {
       next(error);
@@ -41,8 +44,13 @@ class PeopleController {
       }
 
       // Get person
-      const person = await db.getById('people', personId);
-      if (!person) {
+      const { data: person, error } = await supabase
+        .from('people')
+        .select('*')
+        .eq('id', personId)
+        .single();
+
+      if (error || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -67,11 +75,16 @@ class PeopleController {
         throw new AppError('User not authenticated', 401);
       }
 
-      const { name, relationship, reference_memory_id, face_region } = req.body;
+      const { name, relationship, reference_memory_id, face_region }: CreatePersonRequest = req.body;
 
       // Check if memory exists and belongs to user
-      const memory = await db.getById('memories', reference_memory_id);
-      if (!memory) {
+      const { data: memory, error: memoryError } = await supabase
+        .from('memories')
+        .select('*')
+        .eq('id', reference_memory_id)
+        .single();
+
+      if (memoryError || !memory) {
         throw new AppError('Reference memory not found', 404);
       }
 
@@ -80,35 +93,51 @@ class PeopleController {
       }
 
       // Create person
-      const person = await db.insert('people', {
-        user_id: userId,
-        name,
-        relationship,
-        avatar_memory_id: reference_memory_id
-      });
+      const { data: person, error: personError } = await supabase
+        .from('people')
+        .insert({
+          user_id: userId,
+          name,
+          relationship,
+          avatar_memory_id: reference_memory_id
+        })
+        .select()
+        .single();
+
+      if (personError || !person) {
+        throw new AppError(`Failed to create person: ${personError?.message}`, 500);
+      }
 
       // Create face detection for reference image
-      const faceDetection = await db.insert('face_detections', {
-        memory_id: reference_memory_id,
-        person_id: person.id,
-        bounding_box: face_region,
-        confidence: 1.0, // User-defined face has 100% confidence
-        is_verified: true
-      });
+      const { data: faceDetection, error: faceError } = await supabase
+        .from('face_detections')
+        .insert({
+          memory_id: reference_memory_id,
+          person_id: person.id,
+          bounding_box: face_region,
+          confidence: 1.0, // User-defined face has 100% confidence
+          is_verified: true
+        })
+        .select()
+        .single();
 
-      // Add to face recognition queue to extract face embedding
-      await faceRecognitionQueue.add(
-        'extract-face-embedding',
-        {
-          faceDetectionId: faceDetection.id,
-          userId,
-          personId: person.id
-        },
-        {
-          priority: 1,
-          attempts: 3
-        }
-      );
+      if (faceError || !faceDetection) {
+        throw new AppError(`Failed to create face detection: ${faceError?.message}`, 500);
+      }
+
+      // TODO: Add to face recognition queue when implemented
+      // await faceRecognitionQueue.add(
+      //   'extract-face-embedding',
+      //   {
+      //     faceDetectionId: faceDetection.id,
+      //     userId,
+      //     personId: person.id
+      //   },
+      //   {
+      //     priority: 1,
+      //     attempts: 3
+      //   }
+      // );
 
       res.status(201).json({
         success: true,
@@ -133,8 +162,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const person = await db.getById('people', personId);
-      if (!person) {
+      const { data: person, error } = await supabase
+        .from('people')
+        .select('*')
+        .eq('id', personId)
+        .single();
+
+      if (error || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -143,7 +177,16 @@ class PeopleController {
       }
 
       // Update person
-      const updatedPerson = await db.update('people', personId, req.body);
+      const { data: updatedPerson, error: updateError } = await supabase
+        .from('people')
+        .update(req.body)
+        .eq('id', personId)
+        .select()
+        .single();
+
+      if (updateError || !updatedPerson) {
+        throw new AppError(`Failed to update person: ${updateError?.message}`, 500);
+      }
 
       res.json({
         success: true,
@@ -165,8 +208,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const person = await db.getById('people', personId);
-      if (!person) {
+      const { data: person, error } = await supabase
+        .from('people')
+        .select('*')
+        .eq('id', personId)
+        .single();
+
+      if (error || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -175,7 +223,14 @@ class PeopleController {
       }
 
       // Delete person
-      await db.delete('people', personId);
+      const { error: deleteError } = await supabase
+        .from('people')
+        .delete()
+        .eq('id', personId);
+
+      if (deleteError) {
+        throw new AppError(`Failed to delete person: ${deleteError.message}`, 500);
+      }
 
       res.json({
         success: true,
@@ -197,8 +252,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const person = await db.getById('people', personId);
-      if (!person) {
+      const { data: person, error } = await supabase
+        .from('people')
+        .select('*')
+        .eq('id', personId)
+        .single();
+
+      if (error || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -207,7 +267,7 @@ class PeopleController {
       }
 
       // Get memories containing this person
-      const { data: memories, error } = await db.supabase
+      const { data: memories, error } = await supabase
         .from('memories')
         .select(`
           *,
@@ -238,25 +298,40 @@ class PeopleController {
         throw new AppError('User not authenticated', 401);
       }
 
-      const { face_id, person_id, is_correct } = req.body;
+      const { face_id, person_id, is_correct }: VerifyFaceRequest = req.body;
 
       // Check if face detection exists
-      const faceDetection = await db.getById('face_detections', face_id);
-      if (!faceDetection) {
+      const { data: faceDetection, error: faceError } = await supabase
+        .from('face_detections')
+        .select('*')
+        .eq('id', face_id)
+        .single();
+
+      if (faceError || !faceDetection) {
         throw new AppError('Face detection not found', 404);
       }
 
       // Check if memory belongs to user
-      const memory = await db.getById('memories', faceDetection.memory_id);
-      if (!memory || memory.user_id !== userId) {
+      const { data: memory, error: memoryError } = await supabase
+        .from('memories')
+        .select('*')
+        .eq('id', faceDetection.memory_id)
+        .single();
+
+      if (memoryError || !memory || memory.user_id !== userId) {
         throw new AppError('Not authorized to verify this face', 403);
       }
 
       // If correct, update face detection with person ID
       if (is_correct) {
         // Check if person exists and belongs to user
-        const person = await db.getById('people', person_id);
-        if (!person) {
+        const { data: person, error: personError } = await supabase
+          .from('people')
+          .select('*')
+          .eq('id', person_id)
+          .single();
+
+        if (personError || !person) {
           throw new AppError('Person not found', 404);
         }
 
@@ -265,10 +340,17 @@ class PeopleController {
         }
 
         // Update face detection
-        await db.update('face_detections', face_id, {
-          person_id,
-          is_verified: true
-        });
+        const { error: updateError } = await supabase
+          .from('face_detections')
+          .update({
+            person_id,
+            is_verified: true
+          })
+          .eq('id', face_id);
+
+        if (updateError) {
+          throw new AppError(`Failed to update face detection: ${updateError.message}`, 500);
+        }
 
         res.json({
           success: true,
@@ -276,10 +358,17 @@ class PeopleController {
         });
       } else {
         // If incorrect, remove person ID from face detection
-        await db.update('face_detections', face_id, {
-          person_id: null,
-          is_verified: false
-        });
+        const { error: updateError } = await supabase
+          .from('face_detections')
+          .update({
+            person_id: null,
+            is_verified: false
+          })
+          .eq('id', face_id);
+
+        if (updateError) {
+          throw new AppError(`Failed to update face detection: ${updateError.message}`, 500);
+        }
 
         res.json({
           success: true,
