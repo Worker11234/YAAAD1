@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../services/supabaseService';
 import { AppError } from '../middleware/errorHandler';
-import { Person, Memory, FaceDetection, CreatePersonRequest, VerifyFaceRequest } from '../types/database';
+import { CreatePersonRequest, VerifyFaceRequest } from '../types/database';
 // import { faceRecognitionQueue } from '../queues'; // Commented out until queues are set up
 
 class PeopleController {
@@ -162,13 +162,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const { data: person, error } = await supabase
+      const { data: person, error: personError } = await supabase
         .from('people')
         .select('*')
         .eq('id', personId)
         .single();
 
-      if (error || !person) {
+      if (personError || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -208,13 +208,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const { data: person, error } = await supabase
+      const { data: person, error: deletePersonError } = await supabase
         .from('people')
         .select('*')
         .eq('id', personId)
         .single();
 
-      if (error || !person) {
+      if (deletePersonError || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -252,13 +252,13 @@ class PeopleController {
       }
 
       // Check if person exists and belongs to user
-      const { data: person, error } = await supabase
+      const { data: person, error: personCheckError } = await supabase
         .from('people')
         .select('*')
         .eq('id', personId)
         .single();
 
-      if (error || !person) {
+      if (personCheckError || !person) {
         throw new AppError('Person not found', 404);
       }
 
@@ -267,7 +267,7 @@ class PeopleController {
       }
 
       // Get memories containing this person
-      const { data: memories, error } = await supabase
+      const { data: memories, error: memoriesError } = await supabase
         .from('memories')
         .select(`
           *,
@@ -277,8 +277,8 @@ class PeopleController {
         .eq('face_detections.person_id', personId)
         .order('taken_at', { ascending: false });
 
-      if (error) {
-        throw new AppError(`Failed to get memories: ${error.message}`, 500);
+      if (memoriesError) {
+        throw new AppError(`Failed to get memories: ${memoriesError.message}`, 500);
       }
 
       res.json({
