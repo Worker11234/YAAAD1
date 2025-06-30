@@ -2,27 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import sharp from 'sharp';
 import { imageAnalysisQueue } from '../queues';
 import { imageService } from '../services/imageService';
-import { db, supabase } from '../services/supabase';
+import { supabase } from '../services/supabase'; // Removed 'db' import since it's not used
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
-interface InsertedMemory {
-  id: string;
-  user_id: string;
-  image_url: string;
-  thumbnail_url: string;
-  original_filename: string;
-  file_size: number;
-  image_dimensions: {
-    width: number;
-    height: number;
-    format: string;
-  };
-  taken_at: string;
-  location_data: any;
-  privacy_level: string;
-  processing_status: string;
-}
+// Removed InsertedMemory interface since it's not used
 
 interface NewMemoryInput {
   user_id: string;
