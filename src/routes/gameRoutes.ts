@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { apiLimiter } from '../middleware/rateLimiter';
+import { rateLimiter } from '../middleware/rateLimiter';
 import { validateGameSession } from '../middleware/validator';
 import {
   startGameSession,
@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 // Apply rate limiters
-router.use(apiLimiter);
+router.use(rateLimiter);
 
 // Routes
 router.post('/start', validateGameSession, startGameSession);
